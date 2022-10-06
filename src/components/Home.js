@@ -1,16 +1,36 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import BlogList from './BlogList'
+
 const Home = () => {
-    const [blogs, setBlogs] = useState([
-        {title: 'My new website', body: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', author: 'mario', id: 1},
-        {title: 'My new website', body: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', author: 'mario', id: 2},
-        {title: 'My new website', body: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', author: 'mario', id: 3},
-        {title: 'My new website', body: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', author: 'mario', id: 4}
-    ]);
+    const [blogs, setBlogs] = useState(null);
+    const [isPending, setIsPending] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetch(" http://localhost:8000/blogs")
+            .then(res => {
+                if (!res.ok) {
+                    throw Error('Oh  no! Something is wrong...')
+                }
+               return res.json()
+            })
+            .then(data => {
+                console.log(data)
+                setBlogs(data);
+                setIsPending(false);
+                setError(null);
+            })
+            .catch(err => {
+                setError(err.message)
+                setIsPending(false);
+            })
+    }, []);
 
     return (
         <div className="home">
-            <BlogList blogs={blogs} title='All blogs!'/>
+            {error && <div>{error}</div>}
+            {isPending && <div>Loading ...</div>}
+            {blogs && <BlogList blogs={blogs} title='All blogs!' />}
         </div>
     );
 }
